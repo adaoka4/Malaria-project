@@ -92,10 +92,10 @@ flip_minus_sequence <- function(Sequence, strand) {
 
 # Apply the flip_sequence function to the Sequence and Strand columns in utr_sequences
 utr_sequences$FlippedSequence <- mapply(flip_minus_sequence, utr_sequences$Sequence, utr_sequences$strand)
-utr_sequences$length <- utr_sequences$end - utr_sequences$start
+utr_sequences$length <- (utr_sequences$end - utr_sequences$start) + 1
 
 # Save dataframe to a CSV file
-#write.csv(utr_sequences, file = "~/Pf_utr.csv", row.names = FALSE)
+#write.csv(utr_sequences, file = "~/Pf_annotated_utr.csv", row.names = FALSE)
 
 
 # Function to extract gene sequences based on start and end positions
@@ -135,7 +135,7 @@ library(seqinr)
 utr_sequences <- utr_sequences[order(-utr_sequences$length), ]
 
 # Define the output fasta file path
-utr_output_file <- "Pf_utr.fasta"
+utr_output_file <- "Pf_annotated_utr.fasta"
 
 # Open the output file
 utr_file_out <- file(utr_output_file, "w")
@@ -154,7 +154,7 @@ close(utr_file_out)
 
 
 
-# genes
+# entire genes (end to end) from 5'UTR to 3'UTR
 # Define the output fasta file path
 gene_output_file <- "Pf_genes.fasta"
 
@@ -181,95 +181,85 @@ close(gene_file_out)
 
 
 
-
+#Plotting
 #length_dist <- hist(utr_sequences$length)
 library(ggplot2)
+library(dplyr)
+
 #min <- 0
 #max <- 4800
 ggplot(utr_sequences, aes(length)) + 
   geom_histogram(bins = 50, color="black", fill="grey") +
   scale_x_continuous(breaks = seq(0, max(utr_sequences$length), by = 200)) +
   geom_vline(xintercept = 1000, linetype = "dashed", color = "black") +  
-  labs(title="Distribution of Pf 5' UTR lengths (bp)") +
+  labs(title="Distribution of Pf annotated 5' UTR lengths (bp)") +
   theme_classic()
 
 
 
-
+#Plotting motif frequencies
+#AP2 motifs
 genes_with_AP2_motifs <- read.csv("~/genes_with_AP2_motifs.csv", header=TRUE)
 
 
-# Create a new factor variable with the categories reordered based on value
-genes_with_AP2_motifs$AP2_binding_site <- reorder(genes_with_AP2_motifs$AP2_binding_site, 
-                                                  genes_with_AP2_motifs$no_of_genes)
-
-ggplot(genes_with_AP2_motifs, aes(y=AP2_binding_site,
-                              x=no_of_genes)) + 
-  geom_col() + theme_classic()
-
-
-
-
-
-# Find the maximum value, excluding the highest value
-max_value <- max(genes_with_AP2_motifs$no_of_genes)
-
-# Filter the dataframe to exclude the row with the highest value
-genes_with_AP2_motifs_filtered <- genes_with_AP2_motifs[genes_with_AP2_motifs$no_of_genes != max_value, ]
+# categories reordered based on desc order of value
+genes_with_AP2_motifs$y_label <- paste(genes_with_AP2_motifs$Domain, genes_with_AP2_motifs$AP2_binding_site, sep = " | ")
+genes_with_AP2_motifs$y_label <- reorder(genes_with_AP2_motifs$y_label, genes_with_AP2_motifs$no_of_genes)
+ 
+ggplot(genes_with_AP2_motifs, aes(x = no_of_genes, y = y_label)) +
+  geom_col() + labs(title="AP2 domain core binding site", 
+                    x = "Number of Genes", 
+                    y = "ApiAP2") +
+  theme_classic()
 
 
-ggplot(genes_with_AP2_motifs_filtered, aes(y=AP2_binding_site,
-                                  x=no_of_genes)) + 
-  geom_col() + theme_classic()
+# # Find the maximum value, excluding the highest value
+# max_value <- max(genes_with_AP2_motifs$no_of_genes)
+# 
+# # Filter the dataframe to exclude the row with the highest value
+# genes_with_AP2_motifs_filtered <- genes_with_AP2_motifs[genes_with_AP2_motifs$no_of_genes != max_value, ]
+# 
+# 
+# ggplot(genes_with_AP2_motifs_filtered, aes(y=AP2_binding_site,
+#                                   x=no_of_genes)) + 
+#   geom_col() + theme_classic()
 
 
-
+#rsat motifs
 genes_with_identified_motifs <- read.csv("~/genes_with_identified_motifs.csv", header=TRUE)
 
 
 # Create a new factor variable with the categories reordered based on value
-genes_with_identified_motifs$identified_motifs <- reorder(genes_with_identified_motifs$identified_motifs, 
-                                                  genes_with_identified_motifs$no_of_genes)
+genes_with_identified_motifs$y_label <- paste(genes_with_identified_motifs$Motif, genes_with_identified_motifs$core.sequence, sep = " | ")
+genes_with_identified_motifs$y_label <- reorder(genes_with_identified_motifs$y_label, genes_with_identified_motifs$no_of_genes)
 
-ggplot(genes_with_identified_motifs, aes(y=identified_motifs,
+ggplot(genes_with_identified_motifs, aes(y=y_label,
                                   x=no_of_genes)) + 
-  geom_col() + labs(title="AP2 binding site core") + theme_classic()
+  geom_col() + labs(title="de novo motifs core binding site", 
+                    x = "Number of Genes", 
+                    y = "De novo motifs") + theme_classic()
 
 
 
 
 
-# Find the maximum value, excluding the highest value
-max_value2 <- max(genes_with_identified_motifs$no_of_genes)
+# # Find the maximum value, excluding the highest value
+# max_value2 <- max(genes_with_identified_motifs$no_of_genes)
 
-# Filter the dataframe to exclude the row with the highest value
-genes_with_identified_motifs_filtered <- genes_with_identified_motifs[genes_with_identified_motifs$no_of_genes != max_value2, ]
+# # Filter the dataframe to exclude the row with the highest value
+# genes_with_identified_motifs_filtered <- genes_with_identified_motifs[genes_with_identified_motifs$no_of_genes != max_value2, ]
+# 
+# 
+# ggplot(genes_with_identified_motifs_filtered, aes(y=identified_motifs,
+#                                            x=no_of_genes)) + 
+#   geom_col() + theme_classic()
 
 
-ggplot(genes_with_identified_motifs_filtered, aes(y=identified_motifs,
-                                           x=no_of_genes)) + 
-  geom_col() + labs(title="identified motif core") + theme_classic()
-
-
-
+#no stat sig diff
 sig_test <- t.test(genes_with_AP2_motifs$no_of_genes, genes_with_identified_motifs$no_of_genes)
 
 
-# Create an empty vector to store the counts
-library(stringr)
-Pf_utr <- read.csv("Pf_utr.csv", header = TRUE)
-# counts <- vector(length = nrow(genes_with_AP2_pwms))
-# 
-# # Loop through each row of 'column1' and count occurrences in 'column2'
-# for (i in 1:nrow(genes_with_AP2_pwms)) {
-#   counts[i] <- sum(grepl(genes_with_AP2_pwms$AP2_binding_site[i], Pf_utr$FlippedSequence, fixed = TRUE))
-# }
-# 
-# # Print the counts
-# print(counts)
-
-
-# repeat for pwms
+# repeat plotting for pwms
 genes_with_AP2_pwms <- read.csv("~/genes_with_AP2_pwms.csv", header=TRUE)
 
 
@@ -307,10 +297,10 @@ genes_with_identified_pwms$motif <- reorder(genes_with_identified_pwms$motif,
 
 ggplot(genes_with_identified_pwms, aes(y=motif,
                                          x=no_of_matches)) + 
-  geom_col() + labs(title="identified pwms") + theme_classic()
+  geom_col() + labs(title="de novo motifs pwms") + theme_classic()
 
 
-
+#stat sig diff. may be due to longer length of AP2 pwms
 sig_test_pwms <- t.test(genes_with_AP2_pwms$no_of_matches, genes_with_identified_pwms$no_of_matches)
 
 # # Find the maximum value, excluding the highest value
