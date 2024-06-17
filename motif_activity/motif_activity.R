@@ -8,7 +8,7 @@ npm_aggtaa=as.data.frame(aggtaa_npm[,2])
 Eps_aggtaa=aggtaa[,c(3:8)]
 stages=colnames(Eps_aggtaa)
 
-Eps_noramlize= function(df){
+Eps_normalize= function(df){
     row_means=c()
     col_means=c()
     for (i in  1:dim(df)[1]){
@@ -17,33 +17,33 @@ Eps_noramlize= function(df){
     for (i in  1:dim(df)[2]){
        col_means[i]=mean(as.numeric(df[,i]))
     }
-    df_noramlize=df
-     for (i in  1:dim(df_noramlize)[1]){
-        df_noramlize[i,]=  df_noramlize[i,] - row_means[i]
+    df_normalize=df
+     for (i in  1:dim(df_normalize)[1]){
+        df_normalize[i,]=  df_normalize[i,] - row_means[i]
     }
-    for (i in  1:dim(df_noramlize)[2]){
-       df_noramlize[,i]= df_noramlize[,i] - col_means[i]
+    for (i in  1:dim(df_normalize)[2]){
+       df_normalize[,i]= df_normalize[,i] - col_means[i]
     }
 
-    return(df_noramlize)
+    return(df_normalize)
 }
 
-Npm_noramlize= function(df){
+Npm_normalize= function(df){
     col_means=c()
 
     for (i in  1:dim(df)[2]){
        col_means[i]=mean(as.numeric(df[,i]))
     }
-    df_noramlize=df
-    for (i in  1:dim(df_noramlize)[2]){
-       df_noramlize[,i]= df_noramlize[,i] - col_means[i]
+    df_normalize=df
+    for (i in  1:dim(df_normalize)[2]){
+       df_normalize[,i]= df_normalize[,i] - col_means[i]
     }
 
-    return(df_noramlize)
+    return(df_normalize)
 }
 ## aggtaa
-aggtaa_Eps= Eps_noramlize(Eps_aggtaa)
-aggtaa_Npm=Npm_noramlize(npm_aggtaa)
+aggtaa_Eps= Eps_normalize(Eps_aggtaa)
+aggtaa_Npm=Npm_normalize(npm_aggtaa)
 aggtaa_motif_activity=c()
 for(i in 1:dim(aggtaa_Eps)[2]){
     model=lm(aggtaa_Npm[,1]~aggtaa_Eps[,i])
@@ -59,8 +59,8 @@ gcacta_npm= read.table("npm-gcacta.csv", header=T, sep='\t')
 npm_gcacta=as.data.frame(gcacta_npm[,2])
 Eps_gcacta=gcacta[,c(3:8)]
 
-gcacta_Eps= Eps_noramlize(Eps_gcacta)
-gcacta_Npm=Npm_noramlize(npm_gcacta)
+gcacta_Eps= Eps_normalize(Eps_gcacta)
+gcacta_Npm=Npm_normalize(npm_gcacta)
 gcacta_motif_activity=c()
 for(i in 1: dim(gcacta_Eps)[2]){
     model=lm(gcacta_Npm[,1]~gcacta_Eps[,i])
