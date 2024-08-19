@@ -1,7 +1,7 @@
 The following describes code to download the data analysed, the tools required, and how and in which order to execute the scripts.
 
 Tools
-- SRA Toolkit (‘fastq-dump’ ())
+- SRA Toolkit (‘fastq-dump’)
 - Fastqc
 - Trimmomatic
 - STAR
@@ -9,11 +9,12 @@ Tools
 - BioMart tool
 - Load packages in individual scripts
 
+
 Analysis steps
 
 0 Download raw data
-- Raw data in .fq format can be downloaded from SRA ( ) using the accession numbers () of the datasets.
-- GTF files .....
+- Raw data in .fq format can be downloaded from SRA using the provided accession numbers of the datasets to be downloaded.
+- GTF files for the respective reference genomes can be downloaded from Ensembl Protists.
 
 1 Raw data preprocessing
 - Check raw read sequences for quality with FASTQC version 0.11.9.
@@ -48,10 +49,9 @@ STAR --genomeDir </path/to/genome_indices> \
 - Integrate read counts for P. berghei into a single matrix with those of P. falciparum and P. vivax. 
 - Retain genes with 1:1:1 orthologues across the three species.
 
+  Steps 3 to 7 can be run using the provided scripts.
+
 3 Quality control
-- Perform Spearman correlation test with hierarchical clustering on the 500 most variable genes to evaluate the correlation of the P. berghei datasets with the P. falciparum and P. vivax datasets. 
-- Perform dimensionality reduction by principal component analysis (PCA) on the 500 most variable genes. 
-- Remove batch effects in the datasets with ‘removeBatchEffect’, implemented in limma.
 
 4 Differential gene expression analysis 
 
